@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Calendar } from "@/components/ui/calendar"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Camera, UserPlus, Clock, FileText, Users, Trash2 } from 'lucide-react'
+import Image from 'next/image'
 
 export default function AttendanceApp() {
   // State variables
@@ -18,7 +19,7 @@ export default function AttendanceApp() {
   const [attendanceImage, setAttendanceImage] = useState<File | null>(null)
   const [attendanceImagePreview, setAttendanceImagePreview] = useState<string | null>(null)
   const [userId, setUserId] = useState<string>('')
-  const [selectedDates, setSelectedDates] = useState<{ from: Date; to: Date } | undefined>()
+  const [selectedDates, setSelectedDates] = useState<{ from: Date | undefined; to: Date | undefined } | undefined>()
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false)
   const [dialogContent, setDialogContent] = useState<string>('')
   const [users, setUsers] = useState<any[]>([])
@@ -34,7 +35,7 @@ export default function AttendanceApp() {
 
   // Check for webcam support
   useEffect(() => {
-    if (typeof navigator !== 'undefined' && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+    if (typeof navigator !== 'undefined' && typeof navigator.mediaDevices?.getUserMedia === 'function') {
       setIsWebcamAvailable(true)
     } else {
       setIsWebcamAvailable(false)
@@ -196,6 +197,11 @@ export default function AttendanceApp() {
     }
   }
 
+  // Modify the onSelect handler without explicitly typing `range`
+  const handleDateSelect = (range: any) => {
+    setSelectedDates(range ? { from: range.from, to: range.to } : undefined)
+  }
+
   return (
     <div className="min-h-screen w-full bg-gradient-to-b from-gray-100 to-gray-200 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4">
       <Card className="w-full max-w-4xl h-[calc(100vh-2rem)] overflow-auto bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg rounded-3xl shadow-xl">
@@ -215,12 +221,11 @@ export default function AttendanceApp() {
               <div className="flex flex-col items-center space-y-4">
                 <div className="w-24 h-24 md:w-32 md:h-32 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center overflow-hidden">
                   {registerImagePreview ? (
-                    <img src={registerImagePreview} alt="Selected" className="w-full h-full object-cover" />
+                    <Image src={registerImagePreview} alt="Selected" layout="fill" objectFit="cover" />
                   ) : (
                     <Camera className="w-8 h-8 md:w-12 md:h-12 text-gray-400" />
                   )}
                 </div>
-                {/* Hidden file input */}
                 <input
                   type="file"
                   accept="image/*"
@@ -229,7 +234,6 @@ export default function AttendanceApp() {
                   ref={registerInputRef}
                   className="hidden"
                 />
-                {/* Buttons */}
                 <div className="flex space-x-2">
                   <Button variant="outline" onClick={() => registerInputRef.current?.click()}>
                     Upload or Take Photo
@@ -256,12 +260,11 @@ export default function AttendanceApp() {
               <div className="flex flex-col items-center space-y-4">
                 <div className="w-32 h-32 md:w-48 md:h-48 bg-gray-200 dark:bg-gray-700 rounded-2xl flex items-center justify-center overflow-hidden">
                   {attendanceImagePreview ? (
-                    <img src={attendanceImagePreview} alt="Selected" className="w-full h-full object-cover" />
+                    <Image src={attendanceImagePreview} alt="Selected" layout="fill" objectFit="cover" />
                   ) : (
                     <Camera className="w-12 h-12 md:w-16 md:h-16 text-gray-400" />
                   )}
                 </div>
-                {/* Hidden file input */}
                 <input
                   type="file"
                   accept="image/*"
@@ -270,7 +273,6 @@ export default function AttendanceApp() {
                   ref={attendanceInputRef}
                   className="hidden"
                 />
-                {/* Buttons */}
                 <div className="flex space-x-2">
                   <Button variant="outline" onClick={() => attendanceInputRef.current?.click()}>
                     Upload or Take Photo
@@ -292,7 +294,7 @@ export default function AttendanceApp() {
                 <Calendar
                   mode="range"
                   selected={selectedDates}
-                  onSelect={setSelectedDates}
+                  onSelect={handleDateSelect}
                   className="rounded-md border"
                 />
                 <Button className="mt-4" onClick={handleGenerateReport}>
@@ -315,7 +317,6 @@ export default function AttendanceApp() {
         </CardFooter>
       </Card>
 
-      {/* Dialog for displaying messages */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -328,7 +329,6 @@ export default function AttendanceApp() {
         </DialogContent>
       </Dialog>
 
-      {/* Dialog for Camera */}
       <Dialog open={isCameraOpen} onOpenChange={setIsCameraOpen}>
         <DialogContent>
           <DialogHeader>
